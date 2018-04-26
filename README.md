@@ -1,4 +1,12 @@
-# A *Faster* Pytorch Implementation of Faster R-CNN
+Faster R-CNN for Ad Understanding
+
+Adapted by: William Hinthorn
+
+For the main repo, see [jwyang/faster-rcnn.pytorch](https://github.com/jwyang/faster-rcnn.pytorch)
+
+---
+
+# **Adapted from**: A *Faster* Pytorch Implementation of Faster R-CNN
 
 ## Introduction
 
