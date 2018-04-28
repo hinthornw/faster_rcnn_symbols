@@ -82,36 +82,45 @@ void ROIAlignForwardCpu(const float* bottom_data, const float spatial_scale, con
                      const int aligned_height, const int aligned_width, const float * bottom_rois,
                      float* top_data)
 {
+	int pw, ph, c, n;
+	float roi_batch_ind, roi_start_w, roi_start_h, roi_end_w, roi_end_h;
+	// Force malformed ROI to be 1x1
+	float roi_width, roi_height, bin_size_h, bin_size_w; 
+	float h, w;
+	int hstart, wstart;
+	int img_start;
+	float h_ratio, w_ratio;
+	int upleft, upright, downleft, downright;
     const int output_size = num_rois * aligned_height * aligned_width * channels;
-
+	int idx;
     #pragma omp parallel for 
-    for (int idx = 0; idx < output_size; ++idx)
+    for (idx = 0; idx < output_size; ++idx)
     {
         // (n, c, ph, pw) is an element in the aligned output
-        int pw = idx % aligned_width;
-        int ph = (idx / aligned_width) % aligned_height;
-        int c = (idx / aligned_width / aligned_height) % channels;
-        int n = idx / aligned_width / aligned_height / channels;
+        pw = idx % aligned_width;
+        ph = (idx / aligned_width) % aligned_height;
+        c = (idx / aligned_width / aligned_height) % channels;
+        n = idx / aligned_width / aligned_height / channels;
 
-        float roi_batch_ind = bottom_rois[n * 5 + 0];
-        float roi_start_w = bottom_rois[n * 5 + 1] * spatial_scale;
-        float roi_start_h = bottom_rois[n * 5 + 2] * spatial_scale;
-        float roi_end_w = bottom_rois[n * 5 + 3] * spatial_scale;
-        float roi_end_h = bottom_rois[n * 5 + 4] * spatial_scale;
+        roi_batch_ind = bottom_rois[n * 5 + 0];
+        roi_start_w = bottom_rois[n * 5 + 1] * spatial_scale;
+        roi_start_h = bottom_rois[n * 5 + 2] * spatial_scale;
+        roi_end_w = bottom_rois[n * 5 + 3] * spatial_scale;
+        roi_end_h = bottom_rois[n * 5 + 4] * spatial_scale;
 
         // Force malformed ROI to be 1x1
-        float roi_width = fmaxf(roi_end_w - roi_start_w + 1., 0.);
-        float roi_height = fmaxf(roi_end_h - roi_start_h + 1., 0.);
-        float bin_size_h = roi_height / (aligned_height - 1.);
-        float bin_size_w = roi_width / (aligned_width - 1.);
+        roi_width = fmaxf(roi_end_w - roi_start_w + 1., 0.);
+        roi_height = fmaxf(roi_end_h - roi_start_h + 1., 0.);
+        bin_size_h = roi_height / (aligned_height - 1.);
+        bin_size_w = roi_width / (aligned_width - 1.);
 
-        float h = (float)(ph) * bin_size_h + roi_start_h;
-        float w = (float)(pw) * bin_size_w + roi_start_w;
+        h = (float)(ph) * bin_size_h + roi_start_h;
+        w = (float)(pw) * bin_size_w + roi_start_w;
 
-        int hstart = fminf(floor(h), height - 2);
-        int wstart = fminf(floor(w), width - 2);
+        hstart = fminf(floor(h), height - 2);
+        wstart = fminf(floor(w), width - 2);
 
-        int img_start = roi_batch_ind * channels * height * width;
+        img_start = roi_batch_ind * channels * height * width;
 
         // bilinear interpolation
         if (h < 0 || h >= height || w < 0 || w >= width)
@@ -120,12 +129,12 @@ void ROIAlignForwardCpu(const float* bottom_data, const float spatial_scale, con
         }
         else
         {
-            float h_ratio = h - (float)(hstart);
-            float w_ratio = w - (float)(wstart);
-            int upleft = img_start + (c * height + hstart) * width + wstart;
-            int upright = upleft + 1;
-            int downleft = upleft + width;
-            int downright = downleft + 1;
+            h_ratio = h - (float)(hstart);
+            w_ratio = w - (float)(wstart);
+            upleft = img_start + (c * height + hstart) * width + wstart;
+            upright = upleft + 1;
+            downleft = upleft + width;
+            downright = downleft + 1;
 
             top_data[idx] = bottom_data[upleft] * (1. - h_ratio) * (1. - w_ratio)
                 + bottom_data[upright] * (1. - h_ratio) * w_ratio
@@ -140,10 +149,17 @@ void ROIAlignBackwardCpu(const float* top_diff, const float spatial_scale, const
                      const int aligned_height, const int aligned_width, const float * bottom_rois,
                      float* bottom_diff)
 {
+    int pw, ph, c, n;
+	float roi_batch_ind, roi_start_w, roi_start_h, roi_end_w, roi_end_h;
+	float roi_width, roi_height, bin_size_w, bin_size_h;
+	float h, w;
+	int hstart, wstart, img_start;
+    float h_ratio, w_ratio;
+    int upleft, upright, downleft, downright;
     const int output_size = num_rois * aligned_height * aligned_width * channels;
-
+	int idx;
     #pragma omp parallel for 
-    for (int idx = 0; idx < output_size; ++idx)
+    for (idx = 0; idx < output_size; ++idx)
     {
         // (n, c, ph, pw) is an element in the aligned output
         int pw = idx % aligned_width;

@@ -3,6 +3,8 @@
 # Licensed under The MIT License [see LICENSE for details]
 # Written by Bharath Hariharan
 # --------------------------------------------------------
+# pylint: disable=all
+# flake8: noqa
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function

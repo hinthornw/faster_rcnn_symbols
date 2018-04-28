@@ -1,15 +1,21 @@
+'''
+Wrapper to add the library paths to any training/test functions
+'''
 import os.path as osp
 import sys
 
+
 def add_path(path):
+    '''Prepend to system path'''
     if path not in sys.path:
         sys.path.insert(0, path)
 
-this_dir = osp.dirname(__file__)
+
+THIS_DIR = osp.dirname(__file__)
 
 # Add lib to PYTHONPATH
-lib_path = osp.join(this_dir, 'lib')
-add_path(lib_path)
+LIB_PATH = osp.join(THIS_DIR, 'lib')
+add_path(LIB_PATH)
 
-coco_path = osp.join(this_dir, 'data', 'coco', 'PythonAPI')
-add_path(coco_path)
+COCO_PATH = osp.join(THIS_DIR, 'data', 'coco', 'PythonAPI')
+add_path(COCO_PATH)

@@ -4,6 +4,8 @@
 # Licensed under The MIT License [see LICENSE for details]
 # Written by Ross Girshick and Xinlei Chen
 # --------------------------------------------------------
+# pylint: disable-all
+# flake8: noqa
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -15,7 +17,7 @@ from model.utils.cython_bbox import bbox_overlaps
 import numpy as np
 import scipy.sparse
 from model.utils.config import cfg
-import pdb
+# import pdb
 
 ROOT_DIR = osp.join(osp.dirname(__file__), '..', '..')
 
@@ -112,6 +114,8 @@ class imdb(object):
             for i in range(self.num_images)]
 
   def append_flipped_images(self):
+    # import pdb
+    # pdb.set_trace()
     num_images = self.num_images
     widths = self._get_widths()
     for i in range(num_images):
@@ -120,6 +124,9 @@ class imdb(object):
       oldx2 = boxes[:, 2].copy()
       boxes[:, 0] = widths[i] - oldx2 - 1
       boxes[:, 2] = widths[i] - oldx1 - 1
+      for k, (a, b) in enumerate(zip(boxes[:, 2], boxes[:, 0])):
+          if a <  b:
+              print(i, k, boxes[k])
       assert (boxes[:, 2] >= boxes[:, 0]).all()
       entry = {'boxes': boxes,
                'gt_overlaps': self.roidb[i]['gt_overlaps'],

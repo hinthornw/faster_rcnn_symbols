@@ -4,6 +4,8 @@
 # Licensed under The MIT License [see LICENSE for details]
 # Written by Ross Girshick
 # --------------------------------------------------------
+# pylint: disable-all
+# flake8: noqa
 
 """Factory method for easily getting imdbs by name."""
 from __future__ import absolute_import
@@ -15,8 +17,14 @@ from datasets.pascal_voc import pascal_voc
 from datasets.coco import coco
 from datasets.imagenet import imagenet
 from datasets.vg import vg
-
+from datasets.ads import ads
 import numpy as np
+
+
+# Set up ads dataset
+for split in ['train', 'val']:
+    name = 'pitt_ads_{}'.format(split)
+    __sets[name] = (lambda split=split : ads(split))
 
 # Set up voc_<year>_<split>
 for year in ['2007', '2012']:
@@ -52,7 +60,7 @@ for version in ['150-50-20', '150-50-50', '500-150-80', '750-250-150', '1750-700
         name = 'vg_{}_{}'.format(version,split)
         __sets[name] = (lambda split=split, version=version: vg(version, split))
         
-# set up image net.
+# set up imagenet.
 for split in ['train', 'val', 'val1', 'val2', 'test']:
     name = 'imagenet_{}'.format(split)
     devkit_path = 'data/imagenet/ILSVRC/devkit'
